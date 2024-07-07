@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from flask import Flask, request, make_response, jsonify
 from flask_restful import Api, Resource
 import os
-from sqlalchemy_serializer import SerializerMixin
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
@@ -57,28 +57,48 @@ def get_pizzas():
         )
     return jsonify(pizza_list)
 
-@app.route("/restaurant/<int:id>", methods=['GET'])
+@app.route("/restaurant/<int:id>", methods=['GET', "DELETE"])
 def get_restaurants_by_id(id):
     restaurants = Restaurant.query.get(id)
-    if not restaurants:
-        return jsonify({"Message": "Not found"}), 404
+    if request.method == "GET":
+        if not restaurants:
+            return jsonify({"Message": "Not found"}), 404
+        
+        return jsonify({"id":restaurants.id,
+                "name":restaurants.name,
+                "address":restaurants.address
+                })
+    elif request.method == "DELETE":
+        if not restaurants:
+            return jsonify({"Message": "Not found"}), 404
+        
+        db.session.delete(restaurants)
+        db.session.commit()
+        return jsonify({"Message": "Delete successful"})
     
-    return jsonify({"id":restaurants.id,
-            "name":restaurants.name,
-            "address":restaurants.address
-            })
 
-@app.route("/pizza/<int:id>", methods=['GET'])
+@app.route("/pizza/<int:id>", methods=['GET', 'DELETE'])
 def get_pizzas_by_id(id):
     pizza = Pizza.query.get(id)
-    if not pizza:
-        return jsonify({"Message": "Not found"}), 404
     
-    return jsonify({"id":pizza.id,
-            "name":pizza.name,
-            "address":pizza.ingredients
-            })
-            
+    if request.method == 'GET':
+        if not pizza:
+            return jsonify({"Message": "Not found"}), 404
+        
+        return jsonify({"id":pizza.id,
+                "name":pizza.name,
+                "address":pizza.ingredients
+                })
+    elif request.method == 'DELETE':
+        if not pizza:
+            return jsonify({"Message": "Not found"}), 404
+        
+        db.session.delete(pizza)
+        db.session.commit()
+
+        return jsonify({"Message": 'Delete successful'}), 200
+
+                
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)

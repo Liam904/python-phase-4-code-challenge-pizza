@@ -1,7 +1,6 @@
 
 from app import app
 from models import db, Restaurant, Pizza, RestaurantPizza
-# from sqlalchemy_serializer import SerializerMixin
 with app.app_context():
 
     # This will delete any existing rows
