@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 
 from app import app
 from models import db, Restaurant, Pizza, RestaurantPizza
-
+# from sqlalchemy_serializer import SerializerMixin
 with app.app_context():
 
     # This will delete any existing rows
@@ -29,9 +28,9 @@ with app.app_context():
 
     print("Creating RestaurantPizza...")
 
-    pr1 = RestaurantPizza(restaurant=shack, pizza=cheese, price=1)
-    pr2 = RestaurantPizza(restaurant=bistro, pizza=pepperoni, price=4)
-    pr3 = RestaurantPizza(restaurant=palace, pizza=california, price=5)
+    pr1 = RestaurantPizza(restaurants=shack, pizzas=cheese, price=1)
+    pr2 = RestaurantPizza(restaurants=bistro, pizzas=pepperoni, price=4)
+    pr3 = RestaurantPizza(restaurants=palace, pizzas=california, price=5)
     restaurantPizzas = [pr1, pr2, pr3]
     db.session.add_all(restaurants)
     db.session.add_all(pizzas)
