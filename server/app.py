@@ -1,7 +1,7 @@
 from models import db, Restaurant, RestaurantPizza, Pizza
 from flask_migrate import Migrate
-from flask import Flask, request, make_response, jsonify
-from flask_restful import Api, Resource
+from flask import Flask, request, jsonify
+from flask_restful import Api
 import os
 
 
@@ -50,13 +50,12 @@ def get_pizzas():
     return jsonify(pizza_list)
 
 
-
 @app.route("/restaurants/<int:id>", methods=["GET", "DELETE"])
 def get_restaurants_by_id(id):
     restaurant = Restaurant.query.get(id)
     if request.method == "GET":
         if not restaurant:
-            return jsonify({"errors": "Not found"}), 404
+            return jsonify({"errors": "Not found"}), 400
 
         rest_list = []
         for rest in restaurant.restaurant_pizzas:
@@ -84,11 +83,11 @@ def get_restaurants_by_id(id):
         )
     elif request.method == "DELETE":
         if not restaurant:
-            return jsonify({"errors": "Not found"}), 404
+            return jsonify({"errors": "Not found"}), 400
 
         db.session.delete(restaurant)
         db.session.commit()
-        return jsonify({"Message": "Delete successful"}),201
+        return jsonify({"Message": "Delete successful"}), 200
 
 
 ##dynamic routes
@@ -98,14 +97,14 @@ def get_pizzas_by_id(id):
 
     if request.method == "GET":
         if not pizza:
-            return jsonify({"Message": "Not found"}), 404
+            return jsonify({"errors": "Not found"}), 400
 
         return jsonify(
             {"id": pizza.id, "name": pizza.name, "address": pizza.ingredients}
         )
     elif request.method == "DELETE":
         if not pizza:
-            return jsonify({"Message": "Not found"}), 404
+            return jsonify({"errors": "Not found"}), 400
 
         db.session.delete(pizza)
         db.session.commit()
@@ -122,13 +121,10 @@ def add_restaurant_pizzas():
         restaurant_id = data.get("restaurant_id")
 
         if not price:
-            return jsonify({"errors": ["Must be greater than 0 and less than 30"]}), 400
+            return jsonify({"errors": ["Must not be empty"]}), 400
 
         if not (1 <= price <= 30):
             return jsonify({"errors": ["Must be greater than 0 and less than 30"]}), 400
-        
-        
-
 
         new_pizza = RestaurantPizza(
             price=price, pizza_id=pizza_id, restaurant_id=restaurant_id
@@ -139,13 +135,12 @@ def add_restaurant_pizzas():
         related_pizza = Pizza.query.get(pizza_id)
         related_restaurants = Restaurant.query.get(restaurant_id)
 
-
         if not related_pizza:
             return jsonify({"errors": ["Must not be empty"]}), 400
-   
+
         if not related_restaurants:
             return jsonify({"errors": ["Must not be empty"]}), 400
-   
+
         return (
             jsonify(
                 {
