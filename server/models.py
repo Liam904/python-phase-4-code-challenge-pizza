@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_serializer import SerializerMixin
 
@@ -18,17 +18,11 @@ class RestaurantPizza(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     price = db.Column(db.Integer, nullable=False)
+    pizza_id = db.Column(db.Integer, db.ForeignKey('pizzas.id'))
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'))
 
-    pizza_id = db.Column(db.Integer, db.ForeignKey("pizzas.id"))
-    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurants.id"))
+    __serialize__ = ['id', 'price']
 
-    __serialize__ = ['id', 'price', 'pizza_id', 'restaurant_id']
-
-    @validates("price")
-    def validate_price(self, key, value):
-        if not (1 <= value <= 30):
-            raise ValueError("Price must be between 1 and 30")
-        return value
 
 class Pizza(db.Model, SerializerMixin):
     __tablename__ = "pizzas"
@@ -48,4 +42,7 @@ class Restaurant(db.Model, SerializerMixin):
     address = db.Column(db.String)
     restaurant_pizzas = db.relationship('RestaurantPizza', backref='restaurant', lazy=True)
 
-    __serialize__ = ['id', 'name', 'address']
+    
+
+
+    __serialize__ = ['id', 'name', 'address', "restaurant_pizzas"]

@@ -21,25 +21,27 @@ function Home() {
           setRestaurant({ data: null, error: err.error, status: "rejected" })
         );
       }
+    }).catch((err) => {
+      setRestaurant({ data: null, error: err.message, status: "rejected" });
     });
   }, [id]);
 
   function handleAddPizza(newRestaurantPizza) {
-    setRestaurant({
+    setRestaurant((prevState) => ({
       data: {
-        ...restaurant,
+        ...prevState.data,
         restaurant_pizzas: [
-          ...restaurant.restaurant_pizzas,
+          ...prevState.data.restaurant_pizzas,
           newRestaurantPizza,
         ],
       },
       error: null,
       status: "resolved",
-    });
+    }));
   }
 
   if (status === "pending") return <h1>Loading...</h1>;
-  if (status === "rejected") return <h1>Error: {error.error}</h1>;
+  if (status === "rejected") return <h1>Error: {error}</h1>;
 
   return (
     <section className="container">
@@ -50,7 +52,7 @@ function Home() {
       <div className="card">
         <h2>Pizza Menu</h2>
         {restaurant.restaurant_pizzas.map((restaurant_pizza) => (
-          <div key={restaurant_pizza.pizza.id}>
+          <div key={restaurant_pizza.id}>
             <h3>{restaurant_pizza.pizza.name}</h3>
             <p>
               <em>{restaurant_pizza.pizza.ingredients}</em>
